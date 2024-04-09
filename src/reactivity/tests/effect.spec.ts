@@ -74,4 +74,20 @@ describe("effect", () => {
     runner();
     expect(dummy).toBe(3);
   });
+
+  it("onStop", () => {
+    let dummy;
+    const obj = reactive({ prop: 1 });
+    const onStop = jest.fn(() => {
+      console.log("onStop run");
+    });
+    const runner = effect(
+      () => {
+        dummy = obj.prop;
+      },
+      { onStop }
+    );
+    stop(runner);
+    expect(onStop).toHaveBeenCalledTimes(1);
+  });
 });

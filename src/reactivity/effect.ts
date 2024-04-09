@@ -1,8 +1,14 @@
+import { mount } from "../shared";
+
 class ReactiveEffect {
   private _fn;
   deps = [];
-  constructor(fn, public scheduler?) {
+  active = true;
+  scheduler: Function | undefined;
+  onStop?: () => void;
+  constructor(fn, scheduler?: Function) {
     this._fn = fn;
+    this.scheduler = scheduler;
   }
   run() {
     activeEffect = this;
@@ -10,7 +16,13 @@ class ReactiveEffect {
   }
 
   stop() {
-    cleanUp(this);
+    if (this.active) {
+      cleanUp(this);
+      if (this.onStop) {
+        this.onStop();
+      }
+      this.active = false;
+    }
   }
 }
 
@@ -20,6 +32,8 @@ function cleanUp(effect) {
 export function effect(fn, options = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
 
+  //挂载options
+  mount(_effect, options);
   //执行fn
   _effect.run();
 
@@ -42,10 +56,9 @@ export function track(target, key) {
   if (!dep) {
     depMap.set(key, (dep = new Set()));
   }
-  if (activeEffect) {
-    dep.add(activeEffect);
-    activeEffect.deps.push(dep);
-  }
+  if (!activeEffect) return;
+  dep.add(activeEffect);
+  activeEffect.deps.push(dep);
 }
 export function trigger(target, key) {
   const depMap = bucket.get(target);
