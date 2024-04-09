@@ -1,8 +1,17 @@
 import { mutableHandler, readonlyHandler } from "./baseHandlers";
+
 export function reactive(raw) {
-  return new Proxy(raw, mutableHandler);
+  return createReactiveObject(raw, mutableHandler);
 }
 
 export function readonly(raw) {
-  return new Proxy(raw, readonlyHandler);
+  return createReactiveObject(raw, readonlyHandler);
+}
+
+export function isReactive(raw) {
+  //TODO
+}
+
+function createReactiveObject(raw, Handler) {
+  return new Proxy(raw, Handler);
 }
