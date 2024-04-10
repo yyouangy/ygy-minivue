@@ -48,16 +48,24 @@ export function effect(fn, options = {}) {
 const bucket = new WeakMap();
 let activeEffect;
 export function track(target, key) {
+  //weakMap->Map->Set
+  //1.先基于weakMap({target:depMap})的 键target 找到对应的 值depMap
   let depMap = bucket.get(target);
+  //2.没有depMap时，初始化depMap
   if (!depMap) {
     bucket.set(target, (depMap = new Map()));
   }
+  //3.基于depMap({key:dep})的 键key 找到对应的 值dep
   let dep = depMap.get(key);
+  //4.没有dep时，初始化dep
   if (!dep) {
     depMap.set(key, (dep = new Set()));
   }
+  
   if (!activeEffect) return;
+  //5.将当前副作用函数activeEffect添加到dep中
   dep.add(activeEffect);
+  //6.将dep挂载到activeEffect的deps属性上，
   activeEffect.deps.push(dep);
 }
 export function trigger(target, key) {

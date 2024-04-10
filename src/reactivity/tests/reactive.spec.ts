@@ -9,9 +9,12 @@ describe("reactive", () => {
     expect(origin).not.toBe(observer);
 
     expect(observer.name).toBe("ygy");
-
+    
     //isReactive
-    expect(isReactive(origin)).toBe(false);
     expect(isReactive(observer)).toBe(true);
+    expect(isReactive(origin)).toBe(false);
+
+    
+
   });
 });
