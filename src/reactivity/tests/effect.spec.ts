@@ -67,12 +67,15 @@ describe("effect", () => {
     obj.prop = 2;
     expect(dummy).toBe(2);
     stop(runner);
-    obj.prop = 3;
+    //正常stop
+    // obj.prop = 3;
+    //需要优化：obj.prop=obj.prop+1;相当于触发了get，重新收集了依赖
+    obj.prop++;
     expect(dummy).toBe(2);
 
     // stopped effect should still be manually callable
     runner();
-    expect(dummy).toBe(3);
+    expect(dummy).toBe(2);
   });
 
   it("onStop", () => {

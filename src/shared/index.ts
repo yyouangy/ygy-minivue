@@ -1,3 +1,3 @@
-export function mount(target, options) {
+export function extend(target, options) {
   Object.assign(target, options);
 }

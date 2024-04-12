@@ -1,4 +1,8 @@
-import { mount } from "../shared";
+import { extend } from "../shared";
+
+const bucket = new WeakMap();
+let activeEffect;
+let shouldTrack;
 
 class ReactiveEffect {
   private _fn;
@@ -11,8 +15,16 @@ class ReactiveEffect {
     this.scheduler = scheduler;
   }
   run() {
+    //如果调用了stop方法，直接返回_fn的调用结果
+    if (!this.active) {
+      return this._fn;
+    }
+    shouldTrack = true;
     activeEffect = this;
-    return this._fn();
+    const res = this._fn();
+
+    shouldTrack = false;
+    return res;
   }
 
   stop() {
@@ -29,11 +41,11 @@ class ReactiveEffect {
 function cleanUp(effect) {
   effect.deps.forEach((dep) => dep.delete(effect));
 }
-export function effect(fn, options = {}) {
+export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
 
-  //挂载options
-  mount(_effect, options);
+  //合并用户传入的options到_effect实例上
+  extend(_effect, options);
   //执行fn
   _effect.run();
 
@@ -45,8 +57,6 @@ export function effect(fn, options = {}) {
   return runner;
 }
 
-const bucket = new WeakMap();
-let activeEffect;
 export function track(target, key) {
   //weakMap->Map->Set
   //1.先基于weakMap({target:depMap})的 键target 找到对应的 值depMap
@@ -61,11 +71,12 @@ export function track(target, key) {
   if (!dep) {
     depMap.set(key, (dep = new Set()));
   }
-  
+
   if (!activeEffect) return;
+  if (!shouldTrack) return;
   //5.将当前副作用函数activeEffect添加到dep中
   dep.add(activeEffect);
-  //6.将dep挂载到activeEffect的deps属性上，
+  //6.将dep挂载到activeEffect的deps属性上
   activeEffect.deps.push(dep);
 }
 export function trigger(target, key) {
