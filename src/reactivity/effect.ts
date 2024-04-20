@@ -2,7 +2,7 @@ import { extend } from "../shared";
 
 const bucket = new WeakMap();
 let activeEffect;
-let shouldTrack;
+let shouldTrack = false;
 
 class ReactiveEffect {
   private _fn;
@@ -17,17 +17,20 @@ class ReactiveEffect {
   run() {
     //如果调用了stop方法，直接返回_fn的调用结果
     if (!this.active) {
-      return this._fn;
+      return this._fn();
     }
+
+    //
     shouldTrack = true;
     activeEffect = this;
     const res = this._fn();
-
+    //重置
     shouldTrack = false;
     return res;
   }
 
   stop() {
+    //stop之后，activeEffect.deps清空了，之后当触发trigger时，不会再去调用run，实现了停止响应式的功能
     if (this.active) {
       cleanUp(this);
       if (this.onStop) {
@@ -40,6 +43,7 @@ class ReactiveEffect {
 
 function cleanUp(effect) {
   effect.deps.forEach((dep) => dep.delete(effect));
+  effect.deps.length = 0;
 }
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
@@ -58,6 +62,7 @@ export function effect(fn, options: any = {}) {
 }
 
 export function track(target, key) {
+  if (!isTracking()) return;
   //weakMap->Map->Set
   //1.先基于weakMap({target:depMap})的 键target 找到对应的 值depMap
   let depMap = bucket.get(target);
@@ -71,9 +76,10 @@ export function track(target, key) {
   if (!dep) {
     depMap.set(key, (dep = new Set()));
   }
-
-  if (!activeEffect) return;
-  if (!shouldTrack) return;
+  trackEffects(dep);
+}
+export function trackEffects(dep) {
+  if (dep.has(activeEffect)) return;
   //5.将当前副作用函数activeEffect添加到dep中
   dep.add(activeEffect);
   //6.将dep挂载到activeEffect的deps属性上
@@ -82,6 +88,10 @@ export function track(target, key) {
 export function trigger(target, key) {
   const depMap = bucket.get(target);
   const dep = depMap.get(key);
+  triggerEffects(dep);
+}
+
+export function triggerEffects(dep) {
   for (const effect of dep) {
     //判断effect是否有scheduler，如果有，执行scheduler，如果没有，照常执行run
     if (effect.scheduler) {
@@ -90,6 +100,10 @@ export function trigger(target, key) {
       effect.run();
     }
   }
+}
+
+export function isTracking() {
+  return shouldTrack && activeEffect !== undefined;
 }
 
 export function stop(runner) {

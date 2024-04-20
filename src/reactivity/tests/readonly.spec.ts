@@ -8,6 +8,9 @@ describe("readonly", () => {
     expect(origin).not.toBe(observer);
     //可读取
     expect(observer.hobby.a).toBe("piano");
+    //嵌套的readonly
+    expect(isReadonly(observer.hobby)).toBe(true);
+    expect(isReadonly(origin.hobby)).toBe(false);
   });
 
   it("warn when set", () => {

@@ -69,21 +69,19 @@ describe("effect", () => {
     stop(runner);
     //正常stop
     // obj.prop = 3;
-    //需要优化：obj.prop=obj.prop+1;相当于触发了get，重新收集了依赖
+    //需要优化：obj.prop=obj.prop+1;相当于触发了get，重新收集了依赖，希望用一个标识shouldTrack去控制这里不要track
     obj.prop++;
     expect(dummy).toBe(2);
 
     // stopped effect should still be manually callable
     runner();
-    expect(dummy).toBe(2);
+    expect(dummy).toBe(3);
   });
 
   it("onStop", () => {
     let dummy;
     const obj = reactive({ prop: 1 });
-    const onStop = jest.fn(() => {
-      console.log("onStop run");
-    });
+    const onStop = jest.fn(() => {});
     const runner = effect(
       () => {
         dummy = obj.prop;
