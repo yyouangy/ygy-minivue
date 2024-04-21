@@ -4,7 +4,7 @@ const bucket = new WeakMap();
 let activeEffect;
 let shouldTrack = false;
 
-class ReactiveEffect {
+export class ReactiveEffect {
   private _fn;
   deps = [];
   active = true;

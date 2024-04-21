@@ -1,4 +1,4 @@
-import { readonly, reactive, isReadonly } from "../reactive";
+import { readonly, reactive, isReadonly ,isProxy} from "../reactive";
 
 describe("readonly", () => {
   it("happy path", () => {
@@ -31,5 +31,14 @@ describe("readonly", () => {
     expect(isReadonly(raw)).toBe(false);
     expect(isReadonly(user)).toBe(false);
     expect(isReadonly(_user)).toBe(true);
+  });
+
+  it("isProxy", () => {
+    const raw = { age: 10 };
+    const user = reactive(raw);
+    const _user = readonly(raw);
+    expect(isProxy(raw)).toBe(false);
+    expect(isProxy(user)).toBe(true);
+    expect(isProxy(_user)).toBe(true);
   });
 });

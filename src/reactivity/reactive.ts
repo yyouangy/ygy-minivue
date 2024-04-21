@@ -15,8 +15,6 @@ export function readonly(raw) {
   return createReactiveObject(raw, readonlyHandler);
 }
 export function shallowReadonly(raw) {
-  console.log(shallowReadonlyHandler);
-  
   return createReactiveObject(raw, shallowReadonlyHandler);
 }
 
@@ -26,6 +24,10 @@ export function isReactive(value) {
 
 export function isReadonly(value) {
   return !!value[ReactiveFlags.IS_READONLY];
+}
+
+export function isProxy(value) {
+  return isReactive(value) || isReadonly(value);
 }
 function createReactiveObject(raw, Handler) {
   return new Proxy(raw, Handler);
