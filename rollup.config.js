@@ -9,7 +9,7 @@ export default {
             file: 'lib/guide-mini-vue.cjs.js',
         },
         {
-            format: 'esm',
+            format: 'es',
             file: 'lib/guide-mini-vue.esm.js',
         }
 
