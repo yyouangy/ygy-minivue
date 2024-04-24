@@ -38,6 +38,9 @@ function trackRefValue(ref) {
     trackEffects(ref.dep);
   }
 }
+
+//对象->reactive包裹转换为响应式对象
+//原始类型->直接return
 function convert(value) {
   return isObject(value) ? reactive(value) : value;
 }

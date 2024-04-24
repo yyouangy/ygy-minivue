@@ -16,10 +16,11 @@ export function createGetter(isReadonly = false, shallow = false) {
     if (shallow) {
       return res;
     }
+    //如果res是对象，递归处理
     if (isObject(res)) {
       return isReadonly ? readonly(res) : reactive(res);
     }
-
+    //不是readonly，才收集依赖
     if (!isReadonly) {
       track(target, key);
     }
@@ -42,7 +43,7 @@ export const mutableHandler = {
 export const readonlyHandler = {
   get: readonlyGet,
   set(target, key, val) {
-    console.warn(`key:${key},set失败，因为target:${target}是readonly`);
+    console.warn(`key:${key},set失败,因为target:${target}是readonly`);
     return true;
   },
 };

@@ -1,9 +1,17 @@
+import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 
 export function createComponentInstance(vnode: any) {
-  const component = { vnode, type: vnode.type, setupState: {} };
+  const component = {
+    vnode,
+    type: vnode.type,
+    setupState: {},
+    emit: () => {},
+  };
 
+  //挂载emit,预先传入instance,这样使用emit时,只需传入event
+  component.emit = emit.bind(null, component) as any;
   return component;
 }
 
@@ -23,7 +31,7 @@ export function setupStatefulComponent(instance: any) {
   const { setup } = Component;
   if (setup) {
     //setupResult可以是function或object
-    const setupResult = setup(instance.props);
+    const setupResult = setup(instance.props, { emit: instance.emit });
     handleSetupResult(instance, setupResult);
   }
 }

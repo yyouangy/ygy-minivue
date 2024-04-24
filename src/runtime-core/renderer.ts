@@ -43,9 +43,6 @@ function mountElement(vnode: any, container: any) {
     const isOn = (key) => /^on[A-Z]/.test(key);
     if (isOn(key)) {
       const event = key.slice(2).toLowerCase();
-      // el.preventDefault();
-      console.log(el);
-
       el.addEventListener(event, val);
     } else {
       el.setAttribute(key, val);
@@ -76,5 +73,4 @@ function setupRenderEffect(vnode, instance: any, container) {
 
   //将根组件vnode的$el指向subTree的el，用户可以通过this.$el拿到根dom元素
   vnode.el = subTree.el;
-  vnode.props = subTree.props;
 }

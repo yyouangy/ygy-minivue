@@ -61,6 +61,7 @@ export function effect(fn, options: any = {}) {
   return runner;
 }
 
+//收集依赖
 export function track(target, key) {
   if (!isTracking()) return;
   //weakMap->Map->Set
@@ -78,13 +79,15 @@ export function track(target, key) {
   }
   trackEffects(dep);
 }
+
 export function trackEffects(dep) {
   if (dep.has(activeEffect)) return;
   //5.将当前副作用函数activeEffect添加到dep中
   dep.add(activeEffect);
-  //6.将dep挂载到activeEffect的deps属性上
+  //6.将dep挂载到activeEffect的deps属性上(使用全局变量activeEffect反向收集dep,是为了cleanUp中清除dep依赖)
   activeEffect.deps.push(dep);
 }
+//触发依赖
 export function trigger(target, key) {
   const depMap = bucket.get(target);
   const dep = depMap.get(key);

@@ -7,6 +7,8 @@ export const enum ReactiveFlags {
   IS_REACTIVE = "_v_isReactive",
   IS_READONLY = "_v_isReadonly",
 }
+
+//重构为传入源对象和对应的Hander
 export function reactive(raw) {
   return createReactiveObject(raw, mutableHandler);
 }
