@@ -1,6 +1,4 @@
 export function emit(instance, event, ...args) {
-  console.log(instance);
-
   const { props } = instance;
 
   //emit发送的事件名 需要做如下转换

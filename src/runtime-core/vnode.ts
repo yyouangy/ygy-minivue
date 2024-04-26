@@ -22,6 +22,7 @@ function getShapeFlag(type) {
   if (typeof type === "string") {
     return shapeFlags.ELEMENT;
   } else if (isObject(type)) {
+    //0010
     return shapeFlags.STATEFUL_COMPONENT;
   }
 }
