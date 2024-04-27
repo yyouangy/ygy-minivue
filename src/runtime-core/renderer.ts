@@ -1,27 +1,45 @@
-import { isObject } from "../shared";
 import { createComponentInstance, setupComponent } from "./component";
 import { shapeFlags } from "./ShapeFlags";
+import { Fragment, Text } from "./vnode";
 
 export function render(vnode, container) {
-  //
   patch(vnode, container);
 }
 
-function patch(vnode, container) {
+function patch(vnode, container, parentComponent = null) {
   //使用shapeFlags判断是组件还是element
-  const { shapeFlag } = vnode;
-  if (shapeFlag & shapeFlags.ELEMENT) {
-    //处理element
-    processElement(vnode, container);
-  } else if (shapeFlag & shapeFlags.STATEFUL_COMPONENT) {
-    //处理组件
-    processComponent(vnode, container);
+  const { type, shapeFlag } = vnode;
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container, parentComponent);
+      break;
+    case Text:
+      processText(vnode, container);
+      break;
+    default:
+      if (shapeFlag & shapeFlags.ELEMENT) {
+        //处理element
+        processElement(vnode, container, parentComponent);
+      } else if (shapeFlag & shapeFlags.STATEFUL_COMPONENT) {
+        //处理组件
+        processComponent(vnode, container, parentComponent);
+      }
+      break;
   }
 }
-function processElement(vnode: any, container: any) {
-  mountElement(vnode, container);
+
+function processText(vnode, container) {
+  const { children } = vnode;
+  const textNode = (vnode.el = document.createTextNode(children));
+  container.append(textNode);
 }
-function mountElement(vnode: any, container: any) {
+function processFragment(vnode, container, parentComponent) {
+  mountChildren(vnode, container, parentComponent);
+}
+function processElement(vnode: any, container: any, parentComponent) {
+  mountElement(vnode, container, parentComponent);
+}
+function mountElement(vnode: any, container: any, parentComponent) {
   const el = document.createElement(vnode.type);
   //vnode引用真实dom
   vnode.el = el;
@@ -32,7 +50,7 @@ function mountElement(vnode: any, container: any) {
   if (shapeFlag & shapeFlags.TEXT_CHILDREN) {
     el.textContent = children;
   } else if (shapeFlag & shapeFlags.ARRAY_CHILDREN) {
-    mountChildren(vnode, el);
+    mountChildren(vnode, el, parentComponent);
   }
   //设置attribute
   const { props } = vnode;
@@ -50,18 +68,18 @@ function mountElement(vnode: any, container: any) {
   }
   container.append(el);
 }
-function mountChildren(vnode, container) {
-  vnode.children.forEach((v) => patch(v, container));
+function mountChildren(vnode, container, parentComponent) {
+  vnode.children.forEach((v) => patch(v, container, parentComponent));
 }
-function processComponent(vnode: any, container: any) {
-  mountComponent(vnode, container);
+function processComponent(vnode: any, container: any, parentComponent) {
+  mountComponent(vnode, container, parentComponent);
 }
 
-function mountComponent(vnode: any, container) {
-  const instance = createComponentInstance(vnode);
+function mountComponent(initialVNode: any, container, parentComponent) {
+  const instance = createComponentInstance(initialVNode, parentComponent);
 
   setupComponent(instance);
-  setupRenderEffect(vnode, instance, container);
+  setupRenderEffect(initialVNode, instance, container);
 }
 function setupRenderEffect(vnode, instance: any, container) {
   const { proxy } = instance;
@@ -69,7 +87,7 @@ function setupRenderEffect(vnode, instance: any, container) {
   const subTree = instance.render.call(proxy);
 
   //vnode —> element —> mountElement
-  patch(subTree, container);
+  patch(subTree, container, instance);
 
   //将根组件vnode的$el指向subTree的el，用户可以通过this.$el拿到根dom元素
   vnode.el = subTree.el;

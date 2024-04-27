@@ -7,12 +7,8 @@ export function createApp(rootComponent) {
       //先把component转换为vnode，所有的逻辑会基于vnode去处理
       const vnode = createVNode(rootComponent);
 
-      render(vnode, rootContainer);
+      render(vnode, rootContainer,);
     },
   };
 }
 
-export function h(type, props?, children?) {
-  const vnode = createVNode(type, props, children);
-  return vnode;
-}

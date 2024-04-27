@@ -1,6 +1,8 @@
 import { isObject } from "../shared";
 import { shapeFlags } from "./ShapeFlags";
 
+export const Fragment = Symbol("Fragment");
+export const Text = Symbol("Text");
 export function createVNode(type, props?, children?) {
   const vnode = {
     type,
@@ -14,6 +16,15 @@ export function createVNode(type, props?, children?) {
   } else if (Array.isArray(children)) {
     vnode.shapeFlag |= shapeFlags.ARRAY_CHILDREN;
   }
+
+  //vnode是组件类型且children是object才会处理Slots
+  if (vnode.shapeFlag & shapeFlags.STATEFUL_COMPONENT) {
+    if (typeof children === "object") {
+      // normalizeObjectSlots(children, instance.slots);
+      vnode.shapeFlag |= shapeFlags.SLOT_CHILDREN;
+    }
+  }
+
   return vnode;
 }
 
@@ -25,4 +36,7 @@ function getShapeFlag(type) {
     //0010
     return shapeFlags.STATEFUL_COMPONENT;
   }
+}
+export function createTextVNode(text: string) {
+  return createVNode(Text, {}, text);
 }

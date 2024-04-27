@@ -1,24 +1,20 @@
 import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
-<<<<<<< HEAD
 import { initSlots } from "./componentSlots";
-=======
-import { initSlots } from "./componentsSlots";
->>>>>>> 7ffb2bec2eea0a8d00b6ff4bc316acd5543e6634
 
-export function createComponentInstance(vnode: any) {
+let currentInstance = null;
+export function createComponentInstance(vnode: any, parent) {
+  // console.log('currentParentInstance',parent);
+  
   const component = {
     vnode,
     type: vnode.type,
     setupState: {},
-<<<<<<< HEAD
-    props:{},
-    slots:{},
-=======
     props: {},
     slots: {},
->>>>>>> 7ffb2bec2eea0a8d00b6ff4bc316acd5543e6634
+    provides: {},
+    parent,
     emit: () => {},
   };
 
@@ -28,16 +24,11 @@ export function createComponentInstance(vnode: any) {
 }
 
 export function setupComponent(instance) {
-  //TODO
   //initProps
   initProps(instance, instance.vnode.props);
 
   //initSlots
-<<<<<<< HEAD
-  initSlots(instance,instance.vnode.children)
-=======
   initSlots(instance, instance.vnode.children);
->>>>>>> 7ffb2bec2eea0a8d00b6ff4bc316acd5543e6634
   setupStatefulComponent(instance);
 }
 
@@ -48,7 +39,11 @@ export function setupStatefulComponent(instance: any) {
   const { setup } = Component;
   if (setup) {
     //setupResult可以是function或object
+    setCurrentInstance(instance);
     const setupResult = setup(instance.props, { emit: instance.emit });
+
+    setCurrentInstance(null);
+
     handleSetupResult(instance, setupResult);
   }
 }
@@ -66,4 +61,11 @@ function finishComponentSetup(instance: any) {
   // if (Component.render) {
   instance.render = Component.render;
   // }
+}
+
+export function getCurrentInstance() {
+  return currentInstance;
+}
+function setCurrentInstance(instance) {
+  currentInstance = instance;
 }
