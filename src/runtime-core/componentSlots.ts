@@ -1,7 +1,7 @@
 import { shapeFlags } from "./ShapeFlags";
 
 export function initSlots(instance, children) {
-  console.log("初始化Slots");
+  // console.log("初始化Slots");
 
   const { vnode } = instance;
   if (vnode.shapeFlag & shapeFlags.SLOT_CHILDREN) {

@@ -6,7 +6,7 @@ export function render(vnode, container) {
   patch(vnode, container);
 }
 
-function patch(vnode, container, parentComponent = null) {
+function patch(vnode, container, parentComponent = undefined) {
   //使用shapeFlags判断是组件还是element
   const { type, shapeFlag } = vnode;
   switch (type) {
