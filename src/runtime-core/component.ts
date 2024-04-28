@@ -5,15 +5,16 @@ import { initSlots } from "./componentSlots";
 
 let currentInstance = null;
 export function createComponentInstance(vnode: any, parent) {
-  console.log('currentParentInstance',parent);
-  
+  console.log("currentParentInstance", parent);
+
   const component = {
     vnode,
     type: vnode.type,
     setupState: {},
     props: {},
     slots: {},
-    provides: {},
+    //首次创建组件实例，parent为null(此种写法会导致父子组件的provides指向同一地址，这是错误的)
+    provides: parent ? parent.provides : {},
     parent,
     emit: () => {},
   };
