@@ -2,11 +2,9 @@ import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { initSlots } from "./componentSlots";
-
+import { proxyRefs } from "../reactivity/ref";
 let currentInstance = null;
 export function createComponentInstance(vnode: any, parent) {
-  console.log("currentParentInstance", parent);
-
   const component = {
     vnode,
     type: vnode.type,
@@ -17,6 +15,7 @@ export function createComponentInstance(vnode: any, parent) {
     provides: parent ? parent.provides : {},
     parent,
     emit: () => {},
+    isMounted:false
   };
 
   //挂载emit,预先传入instance,这样使用emit时,只需传入event
@@ -51,7 +50,7 @@ export function setupStatefulComponent(instance: any) {
 function handleSetupResult(instance, setupResult: any) {
   //TODO function
   if (typeof setupResult === "object") {
-    instance.setupState = setupResult;
+    instance.setupState = proxyRefs(setupResult);
   }
 
   finishComponentSetup(instance);

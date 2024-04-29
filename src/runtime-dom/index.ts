@@ -1,13 +1,11 @@
 import { createRenderer } from "../runtime-core";
 
 function createElement(type) {
-  console.log("createElement-----------------");
 
   return document.createElement(type);
 }
 
 function patchProp(el, key, val) {
-  console.log("patchProp--------------------");
 
   // 绑定事件
   const isOn = (key) => /^on[A-Z]/.test(key);
@@ -21,7 +19,6 @@ function patchProp(el, key, val) {
 }
 
 function insert(el, parent) {
-  console.log("insert------------------");
 
   parent.append(el);
 }

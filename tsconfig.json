@@ -1,6 +1,6 @@
 {
-    "compilerOptions": {
-        // "types": []
-    },
-   
+  "compilerOptions": {
+    // "types": []
+    "downlevelIteration": true,
+  }
 }
