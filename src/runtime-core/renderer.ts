@@ -45,44 +45,62 @@ export function createRenderer(options) {
     container.append(textNode);
   }
   function processFragment(n1, n2, container, parentComponent) {
-    mountChildren(n1, n2, container, parentComponent);
+    mountChildren(n2, container, parentComponent);
   }
   function processElement(n1, n2, container: any, parentComponent) {
     if (!n1) {
-      mountElement(n1, n2, container, parentComponent);
+      mountElement(n2, container, parentComponent);
     } else {
       patchElement(n1, n2, container);
     }
   }
   function patchElement(n1, n2, container) {
     console.log("patchElement");
+    const { props: oldProps } = n1;
+    const { props: newProps } = n2;
+    const el = n1.el;
 
-    console.log("n1:", n1);
-    console.log("n2:", n2);
+    patchProps(el, oldProps, newProps);
   }
-  function mountElement(n1, n2, container: any, parentComponent) {
+  function patchProps(el, oldProps, newProps) {
+    console.log(oldProps,newProps);
+    
+    for (const key in newProps) {
+      const prevProp = oldProps[key];
+      const nextProp = newProps[key];
+      console.log(prevProp,'-----------------',nextProp);
+      
+      if (prevProp !== nextProp) {  
+        console.log('props改变了',el);
+        
+        //props发生了更新
+        hostPatchProp(el,key,prevProp,nextProp);
+      }
+    }
+  }
+  function mountElement(vnode, container: any, parentComponent) {
     // const el = document.createElement(vnode.type);
-    const el = hostCreateElement(n2.type);
+    const el = hostCreateElement(vnode.type);
     //vnode引用真实dom
-    n2.el = el;
+    vnode.el = el;
     //设置textContent
-    const { children, shapeFlag } = n2;
+    const { children, shapeFlag } = vnode;
     //string array
     if (shapeFlag & shapeFlags.TEXT_CHILDREN) {
       el.textContent = children;
     } else if (shapeFlag & shapeFlags.ARRAY_CHILDREN) {
-      mountChildren(n1, n2, el, parentComponent);
+      mountChildren(vnode, el, parentComponent);
     }
-    const { props } = n2;
+    const { props } = vnode;
     for (const key in props) {
       const val = props[key];
-      hostPatchProp(el, key, val);
+      hostPatchProp(el, key, null,val);
     }
     // container.append(el);
     hostInsert(el, container);
   }
-  function mountChildren(n1, n2, container, parentComponent) {
-    n2.children.forEach((v) => patch(null, v, container, parentComponent));
+  function mountChildren(vnode, container, parentComponent) {
+    vnode.children.forEach((v) => patch(null, v, container, parentComponent));
   }
   function processComponent(n1, n2, container: any, parentComponent) {
     mountComponent(n1, n2, container, parentComponent);

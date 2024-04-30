@@ -5,16 +5,16 @@ function createElement(type) {
   return document.createElement(type);
 }
 
-function patchProp(el, key, val) {
+function patchProp(el, key, prevVal,nextVal) {
 
   // 绑定事件
   const isOn = (key) => /^on[A-Z]/.test(key);
   if (isOn(key)) {
     const event = key.slice(2).toLowerCase();
-    el.addEventListener(event, val);
+    el.addEventListener(event, nextVal);
   } else {
     //设置attribute
-    el.setAttribute(key, val);
+    el.setAttribute(key, nextVal);
   }
 }
 
