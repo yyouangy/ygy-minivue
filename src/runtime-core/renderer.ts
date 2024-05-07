@@ -16,7 +16,6 @@ export function createRenderer(options) {
   }
 
   function patch(n1, n2, container, parentComponent) {
-    // if (!n1) {
     //使用shapeFlags判断是组件还是element
     const { type, shapeFlag } = n2;
     switch (type) {
@@ -36,7 +35,6 @@ export function createRenderer(options) {
         }
         break;
     }
-    // }
   }
 
   function processText(n1, n2, container) {
@@ -51,30 +49,38 @@ export function createRenderer(options) {
     if (!n1) {
       mountElement(n2, container, parentComponent);
     } else {
+
+
+
       patchElement(n1, n2, container);
     }
   }
+ 
   function patchElement(n1, n2, container) {
     console.log("patchElement");
     const { props: oldProps } = n1;
     const { props: newProps } = n2;
-    const el = n1.el;
+    const el = (n2.el = n1.el);
+ 
+    const {children:oldChildren}=n1;
+    const {children:newChildren}=n2
+    patchChildren(oldChildren,newChildren,) 
 
     patchProps(el, oldProps, newProps);
   }
+  function patchChildren(n1,n2,){
+      console.log(n1);
+      console.log(n2);
+      
+  }
   function patchProps(el, oldProps, newProps) {
-    console.log(oldProps,newProps);
-    
+
     for (const key in newProps) {
       const prevProp = oldProps[key];
       const nextProp = newProps[key];
-      console.log(prevProp,'-----------------',nextProp);
-      
-      if (prevProp !== nextProp) {  
-        console.log('props改变了',el);
-        
+      if (prevProp !== nextProp) {
         //props发生了更新
-        hostPatchProp(el,key,prevProp,nextProp);
+        hostPatchProp(el, key, prevProp, nextProp);
       }
     }
   }
@@ -94,7 +100,7 @@ export function createRenderer(options) {
     const { props } = vnode;
     for (const key in props) {
       const val = props[key];
-      hostPatchProp(el, key, null,val);
+      hostPatchProp(el, key, null, val);
     }
     // container.append(el);
     hostInsert(el, container);
