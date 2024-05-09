@@ -1,12 +1,10 @@
 import { createRenderer } from "../runtime-core";
 
 function createElement(type) {
-
   return document.createElement(type);
 }
 
-function patchProp(el, key, prevVal,nextVal) {
-
+function patchProp(el, key, prevVal, nextVal) {
   // 绑定事件
   const isOn = (key) => /^on[A-Z]/.test(key);
   if (isOn(key)) {
@@ -19,13 +17,28 @@ function patchProp(el, key, prevVal,nextVal) {
 }
 
 function insert(el, parent) {
-
   parent.append(el);
 }
 
-const renderer: any = createRenderer({ createElement, patchProp, insert });
+function remove(child) {
+  const parent = child.parentNode;
+  if (parent) {
+    parent.removeChild(child);
+  }
+}
+function setElementText(el, text) {
+  el.textContent = text;
+}
+
+const renderer: any = createRenderer({
+  createElement,
+  patchProp,
+  insert,
+  remove,
+  setElementText,
+});
 
 export function createApp(...args) {
   return renderer.createApp(...args);
 }
-export * from "../runtime-core"
+export * from "../runtime-core";
