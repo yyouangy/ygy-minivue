@@ -97,13 +97,58 @@ export function createRenderer(options) {
       //Array->Array diff
       else {
         console.log("Array->Array");
-        patchKeyedChildren(c1, c2);
+        patchKeyedChildren(c1, c2, container, parentComponent);
       }
     }
   }
 
-  function patchKeyedChildren(c1,c2){
-    
+  function patchKeyedChildren(c1, c2, container, parentComponent) {
+    //判断节点是否相同
+    function isSameVNodeType(n1, n2) {
+      return n1.type === n2.type && n1.key === n2.key;
+    }
+    //预处理前置节点
+    let i = 0;
+    let e1 = c1.length - 1;
+    let e2 = c2.length - 1;
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[i];
+      const n2 = c2[i];
+      if (isSameVNodeType(n1, n2)) {
+        //如果n1,n2是相同的，递归调用patch比较
+        patch(n1, n2, container, parentComponent);
+      } else {
+        break;
+      }
+      i++;
+    }
+
+    //预处理后置节点
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[e1];
+      const n2 = c2[e2];
+      if (isSameVNodeType(n1, n2)) {
+        //如果n1,n2是相同的，递归调用patch比较
+        patch(n1, n2, container, parentComponent);
+      } else {
+        break;
+      }
+      e1--;
+      e2--;
+    }
+    console.log(i, e1, e2); //2,1,2
+
+    //新的比旧的多(需要新增节点)
+
+    // A B
+    //C A B
+    //i e1 e2 ：0 -1 0
+    if (i > e1) {
+      if (i <= e2) {
+        const nextPos = e2 + 1; //1
+        const anchor = nextPos < c2.length ? c2[nextPos] : null;
+      }
+    }
   }
   function unmountChildren(children) {
     for (let i = 0; i < children.length; i++) {
