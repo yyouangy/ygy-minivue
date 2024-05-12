@@ -59,24 +59,24 @@ export function createRenderer(options) {
     console.log("patchElement");
     const { props: oldProps } = n1;
     const { props: newProps } = n2;
+
     const el = (n2.el = n1.el);
 
     patchChildren(n1, n2, el, parentComponent);
     patchProps(el, oldProps, newProps);
   }
   function patchChildren(n1, n2, container, parentComponent) {
-    console.log(n1);
-    console.log(n2);
     //根据n1,n2的shapeFlag判断新旧VNode的children类型
     const { shapeFlag: oldShapeFlag } = n1;
+    //c1:旧子节点
     const { children: c1 } = n1;
+    //c2:新子节点
     const { children: c2 } = n2;
     const { shapeFlag } = n2;
     //处理新节点的children是Text类型
     if (shapeFlag & shapeFlags.TEXT_CHILDREN) {
       //Array->Text
       if (oldShapeFlag & shapeFlags.ARRAY_CHILDREN) {
-        console.log("Array=>Text");
         //1.清空老节点的children
         unmountChildren(c1);
       }
@@ -137,14 +137,12 @@ export function createRenderer(options) {
       e1--;
       e2--;
     }
-    console.log(i, e1, e2);
 
     //新的比旧的多(需要新增节点)
     if (i > e1) {
       //新节点还有元素未遍历完
       if (i <= e2) {
         const nextPos = e2 + 1;
-        console.log(c2, nextPos);
         const anchor = nextPos < l2 ? c2[nextPos].el : null;
         // 遍历剩余的新子节点(i到e2之间)，依次插入到锚点之前
         while (i <= e2) {
@@ -155,24 +153,74 @@ export function createRenderer(options) {
     }
 
     //新的比旧的少(需要卸载节点)
-    if (i > e2) {
-      //旧节点还有元素未遍历完
-      if (i <= e1) {
-        console.log("新<旧");
-        // 遍历剩余的旧子节点(i到e1之间)，依次卸载
-        while (i <= e1) {
-          hostRemove(c1[i].el);
-          i++;
+    else if (i > e2) {
+      // 遍历剩余的旧子节点(i到e1之间)，依次卸载
+      while (i <= e1) {
+        hostRemove(c1[i].el);
+        i++;
+      }
+    } else {
+      //中间对比
+      //旧：A B C D F G
+      //新：A B E C F G
+      let s1 = i;
+      let s2 = i;
+      //c2中需要patch的节点个数
+      let toBePatched = e2 - s2 + 1;
+      //c2中已经patch过的节点
+      let patched = 0;
+
+      //创建映射表，用于通过节点的key查找该节点在c2中的位置
+      const keyToNewIndexMap = new Map();
+      for (let i = s2; i <= e2; i++) {
+        const nextChild = c2[i];
+        //key ≠ null undefined
+        // if (nextChild.key !== null) {
+        //   //如果映射表中有相同的key需要报错
+        //   if (keyToNewIndexMap.has(nextChild.key)) {
+        //     console.warn(
+        //       `Duplicate keys found during update:`,
+        //       JSON.stringify(nextChild.key),
+        //       `Make sure keys are unique.`
+        //     );
+        //   }
+        //将key作为键，c2中这个节点的索引作为值
+        keyToNewIndexMap.set(nextChild.key, i);
+        // }
+      }
+      console.log(keyToNewIndexMap); //Map(2) {'E' => 2, 'C' => 3}
+
+      //遍历c1，确认每个节点在c2中是否存在
+      for (let i = s1; i <= e1; i++) {
+        const prevChild = c1[i];
+        if (patched >= toBePatched) {
+          hostRemove(prevChild);
+          continue;
+        }
+
+        let newIndex;
+        if (prevChild.key !== null) {
+          newIndex = keyToNewIndexMap.get(prevChild.key);
+        }
+        // else {
+        //   //props中未传入key时，遍历c2查找
+        //   for (let j = s2; j <= e2; j++) {
+        //     if (isSameVNodeType(prevChild, c2[j])) {
+        //       newIndex = j;
+        //       break;
+        //     }
+        //   }
+        // }
+        //c1[newIndex]在c2中不存在
+        if (newIndex === undefined) {
+          hostRemove(prevChild.el);
+        } else {
+          patch(prevChild, c2[newIndex], container, parentComponent, null);
+          patched++;
         }
       }
     }
-
-
-
-    //中间对比
-    
   }
-
 
   function unmountChildren(children) {
     for (let i = 0; i < children.length; i++) {
@@ -212,7 +260,7 @@ export function createRenderer(options) {
     hostInsert(el, container, anchor);
   }
   function mountChildren(children, container, parentComponent) {
-    children.forEach((v) => patch(null, v, container, parentComponent));
+    children.forEach((v) => patch(null, v, container, parentComponent, null));
   }
   function processComponent(n1, n2, container: any, parentComponent) {
     mountComponent(n1, n2, container, parentComponent);
@@ -233,7 +281,7 @@ export function createRenderer(options) {
         //存一下init时的subTree
         instance.subTree = subTree;
         //vnode —> element —> mountElement
-        patch(null, subTree, container, instance);
+        patch(null, subTree, container, instance, null);
         //将根组件vnode的$el指向subTree的el，用户可以通过this.$el拿到根dom元素
         vnode.el = subTree.el;
 
@@ -246,7 +294,7 @@ export function createRenderer(options) {
         const nextSubTree = subTree;
         instance.subTree = subTree;
 
-        patch(prevSubTree, nextSubTree, container, instance);
+        patch(prevSubTree, nextSubTree, container, instance, null);
       }
     });
   }

@@ -62,15 +62,14 @@ import { ref, h } from "../../lib/guide-mini-vue.esm.js";
 //左侧
 //旧：C D E A B
 //新：A B
-const prevChildren = [
-    h("p", { key: "C" }, "C"),
-    h("p", { key: "D" }, "D"),
-    h("p", { key: "E" }, "E"),
-    h("p", { key: "A" }, "A"),
-    h("p", { key: "B" }, "B"),
-];
-
-const nextChildren = [h("p", { key: "A" }, "A"), h("p", { key: "B" }, "B")];
+// const prevChildren = [
+//     h("p", { key: "C" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+// ];
+// const nextChildren = [h("p", { key: "A" }, "A"), h("p", { key: "B" }, "B")];
 
 //右侧
 //旧：A B C D E
@@ -82,8 +81,51 @@ const nextChildren = [h("p", { key: "A" }, "A"), h("p", { key: "B" }, "B")];
 //     h("p", { key: "D" }, "D"),
 //     h("p", { key: "E" }, "E"),
 // ];
-
 // const nextChildren = [h("p", { key: "A" }, "A"), h("p", { key: "B" }, "B")];
+
+//5.中间对比
+
+//旧：A B C D F G
+//新：A B E C F G
+//(1)实现删除旧节点中的D,同时修改C的props
+// const prevChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "C", id: "C-prev" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "C", id: "C-next" }, "C"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+
+//旧：A B C E D F G
+//新：A B E C F G
+//(2)当对比完C E之后，可以直接删除D
+const prevChildren = [
+    h("p", { key: "A" }, "A"),
+    h("p", { key: "B" }, "B"),
+    h("p", { key: "C", id: "C-prev" }, "C"),
+    h("p", { key: "E" }, "E"),
+    h("p", { key: "D" }, "D"),
+    h("p", { key: "F" }, "F"),
+    h("p", { key: "G" }, "G"),
+];
+const nextChildren = [
+    h("p", { key: "A" }, "A"),
+    h("p", { key: "B" }, "B"),
+    h("p", { key: "E" }, "E"),
+    h("p", { key: "C", id: "C-next" }, "C"),
+    h("p", { key: "F" }, "F"),
+    h("p", { key: "G" }, "G"),
+];
+
 export default {
     name: "ArrayToText",
     setup() {
