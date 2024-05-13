@@ -178,7 +178,7 @@ export function createRenderer(options) {
         // if (nextChild.key !== null) {
         //   //如果映射表中有相同的key需要报错
         //   if (keyToNewIndexMap.has(nextChild.key)) {
-        //     console.warn(
+        //     console.warn(  
         //       `Duplicate keys found during update:`,
         //       JSON.stringify(nextChild.key),
         //       `Make sure keys are unique.`
