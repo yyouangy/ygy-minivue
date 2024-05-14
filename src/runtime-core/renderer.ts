@@ -169,6 +169,13 @@ export function createRenderer(options) {
       let toBePatched = e2 - s2 + 1;
       //c2中已经patch过的节点
       let patched = 0;
+      let moved = false;
+      let maxNewIndexSoFar = 0;
+      //创建新旧节点对应的有映射关系,使用定长数组，性能更好
+      const newIndexToOldIndexMap = new Array(toBePatched);
+      for (let i = 0; i < toBePatched; i++) {
+        newIndexToOldIndexMap[i] = 0;
+      }
 
       //创建映射表，用于通过节点的key查找该节点在c2中的位置
       const keyToNewIndexMap = new Map();
@@ -178,7 +185,7 @@ export function createRenderer(options) {
         // if (nextChild.key !== null) {
         //   //如果映射表中有相同的key需要报错
         //   if (keyToNewIndexMap.has(nextChild.key)) {
-        //     console.warn(  
+        //     console.warn(
         //       `Duplicate keys found during update:`,
         //       JSON.stringify(nextChild.key),
         //       `Make sure keys are unique.`
@@ -188,7 +195,7 @@ export function createRenderer(options) {
         keyToNewIndexMap.set(nextChild.key, i);
         // }
       }
-      console.log(keyToNewIndexMap); //Map(2) {'E' => 2, 'C' => 3}
+      console.log(keyToNewIndexMap); //Map(2) {'E' => 2, 'C' => 3, 'D' => 4}
 
       //遍历c1，确认每个节点在c2中是否存在
       for (let i = s1; i <= e1; i++) {
@@ -201,22 +208,52 @@ export function createRenderer(options) {
         let newIndex;
         if (prevChild.key !== null) {
           newIndex = keyToNewIndexMap.get(prevChild.key);
+        } else {
+          //props中未传入key时，遍历c2查找
+          for (let j = s2; j <= e2; j++) {
+            if (isSameVNodeType(prevChild, c2[j])) {
+              newIndex = j;
+              break;
+            }
+          }
         }
-        // else {
-        //   //props中未传入key时，遍历c2查找
-        //   for (let j = s2; j <= e2; j++) {
-        //     if (isSameVNodeType(prevChild, c2[j])) {
-        //       newIndex = j;
-        //       break;
-        //     }
-        //   }
-        // }
         //c1[newIndex]在c2中不存在
         if (newIndex === undefined) {
           hostRemove(prevChild.el);
         } else {
+          //建立同一个元素在c1和c2中位置的关系
+          newIndexToOldIndexMap[newIndex - s2] = i + 1;
+          //判断是否需要移动
+          //maxNewIndexSoFar用来记录上一次的newIndex,如果newIndex小于上一次的newIndex，说明在c1中，当前节点在上一个节点的后面
+          //而在c2中，当前节点在上一个节点的前面，说明当前节点需要移动
+          if (newIndex >= maxNewIndexSoFar) {
+            maxNewIndexSoFar = newIndex;
+          } else {
+            moved = true;
+          }
           patch(prevChild, c2[newIndex], container, parentComponent, null);
           patched++;
+        }
+      }
+
+      const increasingNewIndexSequence = moved
+        ? getSequence(newIndexToOldIndexMap)
+        : [];
+      let j = increasingNewIndexSequence.length - 1;
+      //倒循环可以确保锚点是一个确定的节点(不会移动)
+      for (let i = toBePatched - 1; i >= 0; i--) {
+        const nextIndex = s2 + i;
+        const nextChild = c2[nextIndex];
+        const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null;
+        if (newIndexToOldIndexMap[i] === 0) {
+          patch(null, nextChild, container, parentComponent, anchor);
+        } else if (moved) {
+          if (j < 0 || i !== increasingNewIndexSequence[j]) {
+            console.log(i, j, "移动逻辑");
+            hostInsert(nextChild.el, container, anchor);
+          } else {
+            j--;
+          }
         }
       }
     }
@@ -302,4 +339,56 @@ export function createRenderer(options) {
   return {
     createApp: createAppApi(render),
   };
+}
+
+// 最长的递增子序列
+function getSequence(arr) {
+  const len = arr.length;
+  const min_arr = [0]; // 存储最小的索引，以索引0为基准
+  const prev_arr = arr.slice(); // 储存前面的索引，slice为浅复制一个新的数组
+  let last_index;
+  let start;
+  let end;
+  let middle;
+  for (let i = 0; i < len; i++) {
+    let arrI = arr[i];
+    if (arrI !== 0) {
+      // vue中为0，表示直接创建
+      // 1. 如果当前n比min_arr最后一项大
+      last_index = min_arr[min_arr.length - 1];
+      if (arr[last_index] < arrI) {
+        min_arr.push(i);
+        prev_arr[i] = last_index; // 前面的索引
+        continue;
+      }
+      // 2. 如果当前n比min_arr最后一项小（二分类查找）
+      start = 0;
+      end = min_arr.length - 1;
+      while (start < end) {
+        middle = (start + end) >> 1; // 相当于Math.floor((start + end)/2)
+        if (arr[min_arr[middle]] < arrI) {
+          start = middle + 1;
+        } else {
+          end = middle;
+        }
+      }
+      if (arr[min_arr[end]] > arrI) {
+        min_arr[end] = i;
+        if (end > 0) {
+          prev_arr[i] = min_arr[end - 1]; // 前面的索引
+        }
+      }
+    }
+  }
+
+  // 从最后一项往前查找
+  let result = [];
+  let i = min_arr.length;
+  let last = min_arr[i - 1];
+  while (i-- > 0) {
+    result[i] = last;
+    last = prev_arr[last];
+  }
+
+  return result;
 }

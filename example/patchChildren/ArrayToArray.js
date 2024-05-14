@@ -108,24 +108,107 @@ import { ref, h } from "../../lib/guide-mini-vue.esm.js";
 //旧：A B C E D F G
 //新：A B E C F G
 //(2)当对比完C E之后，可以直接删除D
+// const prevChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "C", id: "C-prev" }, "C"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "C", id: "C-next" }, "C"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+
+//旧：A B C D E F G
+//新：A B E C D F G
+//(3)移动逻辑
+// const prevChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "C", id: "C-prev" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "C", id: "C-next" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+
+// const prevChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "C", id: "C-prev" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "F" }, "F"),
+// ];
+// const nextChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "C", id: "C-next" }, "C"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "F" }, "F"),
+// ];
+
+// 创建新节点
+// const prevChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "C", id: "C-prev" }, "C"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+// const nextChildren = [
+//     h("p", { key: "A" }, "A"),
+//     h("p", { key: "B" }, "B"),
+//     h("p", { key: "E" }, "E"),
+//     h("p", { key: "C", id: "C-next" }, "C"),
+//     h("p", { key: "D" }, "D"),
+//     h("p", { key: "F" }, "F"),
+//     h("p", { key: "G" }, "G"),
+// ];
+
+// 综合范例
 const prevChildren = [
     h("p", { key: "A" }, "A"),
     h("p", { key: "B" }, "B"),
+
     h("p", { key: "C", id: "C-prev" }, "C"),
-    h("p", { key: "E" }, "E"),
     h("p", { key: "D" }, "D"),
+    h("p", { key: "E" }, "E"),
+    h("p", { key: "Z" }, "Z"),
+
     h("p", { key: "F" }, "F"),
     h("p", { key: "G" }, "G"),
 ];
 const nextChildren = [
     h("p", { key: "A" }, "A"),
     h("p", { key: "B" }, "B"),
-    h("p", { key: "E" }, "E"),
+
+    h("p", { key: "D" }, "D"),
     h("p", { key: "C", id: "C-next" }, "C"),
+    h("p", { key: "Y" }, "Y"),
+    h("p", { key: "E" }, "E"),
+
     h("p", { key: "F" }, "F"),
     h("p", { key: "G" }, "G"),
 ];
-
 export default {
     name: "ArrayToText",
     setup() {
